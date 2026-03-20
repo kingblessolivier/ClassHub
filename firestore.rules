@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    function isMember(classId) {
+      return isAuthed() &&
+        exists(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid));
+    }
+
+    function roleOf(classId) {
+      return get(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid)).data.role;
+    }
+
+    function isRepOrLecturer(classId) {
+      return isMember(classId) &&
+        (roleOf(classId) == 'rep' || roleOf(classId) == 'lecturer');
+    }
+
+    function isStudent(classId) {
+      return isMember(classId) && roleOf(classId) == 'student';
+    }
+
+    match /classes/{classId} {
+      allow read: if isMember(classId);
+    }
+
+    match /classes/{classId}/members/{uid} {
+      // Members can read their own membership doc.
+      allow read: if isAuthed() && request.auth.uid == uid;
+
+      // Role changes are managed by server/admin workflows.
+      allow create, update, delete: if false;
+    }
+
+    match /classes/{classId}/assignments/{assignmentId} {
+      allow read: if isMember(classId);
+      allow create, update, delete: if isRepOrLecturer(classId);
+    }
+
+    match /classes/{classId}/announcements/{announcementId} {
+      allow read: if isMember(classId);
+      allow create, update, delete: if isRepOrLecturer(classId);
+    }
+
+    match /classes/{classId}/submissions/{submissionId} {
+      allow read: if isRepOrLecturer(classId) || resource.data.studentUid == request.auth.uid;
+
+      allow create: if isStudent(classId) && request.resource.data.studentUid == request.auth.uid;
+
+      allow update, delete: if false;
+    }
+  }
+}
+

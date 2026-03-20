@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ClassHub — Assignment Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --surface2: #f0ede8;
+  --border: rgba(0,0,0,0.09);
+  --border2: rgba(0,0,0,0.15);
+  --text: #1a1916;
+  --text2: #6b6860;
+  --text3: #9e9b94;
+  --blue: #1a56db;
+  --blue-bg: #eff4ff;
+  --blue-text: #1e40af;
+  --red: #e02424;
+  --red-bg: #fef2f2;
+  --red-text: #991b1b;
+  --amber: #d97706;
+  --amber-bg: #fffbeb;
+  --amber-text: #92400e;
+  --green: #057a55;
+  --green-bg: #f0fdf4;
+  --green-text: #166534;
+  --purple: #7e3af2;
+  --purple-bg: #f5f3ff;
+  --purple-text: #5b21b6;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
+button{font-family:'DM Sans',sans-serif;cursor:pointer}
+input,select,textarea{font-family:'DM Sans',sans-serif}
+
+/* ── Login ── */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px;width:400px;box-shadow:var(--shadow-md)}
+.login-logo{font-size:24px;font-weight:600;letter-spacing:-0.5px;margin-bottom:4px}
+.login-sub{color:var(--text2);font-size:13px;margin-bottom:28px}
+.login-label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.04em}
+.login-input{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--radius);font-size:14px;background:var(--bg);color:var(--text);margin-bottom:14px;outline:none;transition:border 0.15s}
+.login-input:focus{border-color:var(--blue);background:#fff}
+.role-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
+.role-btn{padding:10px 8px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text2);font-size:12px;font-weight:500;transition:all 0.15s;text-align:center}
+.role-btn:hover{border-color:var(--blue);color:var(--blue-text);background:var(--blue-bg)}
+.role-btn.selected{border-color:var(--blue);background:var(--blue-bg);color:var(--blue-text);font-weight:600}
+.btn-primary{width:100%;padding:11px;background:var(--text);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;transition:background 0.15s}
+.btn-primary:hover{background:#333}
+
+/* ── App shell ── */
+#app{display:none;height:100vh;overflow:hidden;display:none;flex-direction:column}
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:0;height:56px;flex-shrink:0}
+.topnav-brand{font-size:16px;font-weight:600;letter-spacing:-0.3px;margin-right:32px}
+.topnav-tabs{display:flex;gap:2px;flex:1}
+.tnav{padding:6px 14px;border-radius:8px;background:none;border:none;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;position:relative}
+.tnav:hover{background:var(--bg);color:var(--text)}
+.tnav.active{background:var(--bg);color:var(--text)}
+.tnav .badge{position:absolute;top:4px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--red)}
+.topnav-right{display:flex;align-items:center;gap:10px}
+.role-chip{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+.role-chip.rep{background:var(--purple-bg);color:var(--purple-text)}
+.role-chip.student{background:var(--blue-bg);color:var(--blue-text)}
+.role-chip.lecturer{background:var(--green-bg);color:var(--green-text)}
+.user-name{font-size:13px;font-weight:500}
+.logout-btn{padding:6px 12px;background:none;border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text2);transition:all 0.15s}
+.logout-btn:hover{background:var(--bg);color:var(--text)}
+
+.main-content{flex:1;overflow-y:auto;padding:24px}
+.pane{display:none}
+.pane.active{display:block}
+
+/* ── Stat cards ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px}
+.stat-num{font-size:28px;font-weight:600;letter-spacing:-1px;line-height:1}
+.stat-lbl{font-size:12px;color:var(--text2);margin-top:4px}
+.stat-card.blue .stat-num{color:var(--blue)}
+.stat-card.red .stat-num{color:var(--red)}
+.stat-card.amber .stat-num{color:var(--amber)}
+.stat-card.green .stat-num{color:var(--green)}
+
+/* ── Two-col layout ── */
+.two-col{display:grid;grid-template-columns:1fr 300px;gap:20px}
+
+/* ── Cards / panels ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-head-title{font-size:14px;font-weight:600}
+.card-body{padding:0}
+
+/* ── Assignment rows ── */
+.a-row{display:flex;align-items:flex-start;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s}
+.a-row:last-child{border-bottom:none}
+.a-row:hover{background:var(--bg)}
+.a-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.a-dot.red{background:var(--red)}
+.a-dot.amber{background:var(--amber)}
+.a-dot.green{background:var(--green)}
+.a-dot.blue{background:var(--blue)}
+.a-info{flex:1}
+.a-title{font-size:13px;font-weight:600}
+.a-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.a-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.pill{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600}
+.pill.red{background:var(--red-bg);color:var(--red-text)}
+.pill.amber{background:var(--amber-bg);color:var(--amber-text)}
+.pill.green{background:var(--green-bg);color:var(--green-text)}
+.pill.blue{background:var(--blue-bg);color:var(--blue-text)}
+.pill.gray{background:var(--surface2);color:var(--text2)}
+
+/* ── Buttons ── */
+.btn{padding:7px 14px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s}
+.btn:hover{background:var(--bg)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.blue{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.blue:hover{background:#1448b8}
+.btn.red{background:var(--red-bg);color:var(--red-text);border-color:#fca5a5}
+.btn.green{background:var(--green-bg);color:var(--green-text);border-color:#86efac}
+
+/* ── Forms ── */
+.form-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:16px}
+.form-section h3{font-size:15px;font-weight:600;margin-bottom:18px}
+.form-row{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px}
+.form-ctrl{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border 0.15s}
+.form-ctrl:focus{border-color:var(--blue);background:#fff}
+.form-ctrl[type=date]{color-scheme:light}
+.upload-zone{border:2px dashed var(--border2);border-radius:8px;padding:24px;text-align:center;color:var(--text2);font-size:13px;cursor:pointer;transition:all 0.15s}
+.upload-zone:hover{border-color:var(--blue);background:var(--blue-bg);color:var(--blue-text)}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.success-toast{background:var(--green-bg);border:1px solid #86efac;border-radius:8px;padding:10px 14px;color:var(--green-text);font-size:13px;font-weight:500;margin-bottom:14px;display:none}
+
+/* ── Announcements ── */
+.ann-row{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border)}
+.ann-row:last-child{border-bottom:none}
+.ann-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+.ann-body .ann-title{font-size:13px;font-weight:600}
+.ann-body .ann-text{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.5}
+.ann-body .ann-meta{font-size:11px;color:var(--text3);margin-top:5px}
+
+/* ── Calendar ── */
+.cal-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-month-name{font-size:14px;font-weight:600}
+.cal-arrow{width:28px;height:28px;border:1px solid var(--border2);border-radius:7px;background:none;cursor:pointer;font-size:14px;color:var(--text2);display:flex;align-items:center;justify-content:center}
+.cal-arrow:hover{background:var(--bg)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-hd{text-align:center;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;padding:4px 0 8px;letter-spacing:0.05em}
+.cal-day{min-height:56px;padding:5px 4px;border-radius:7px;cursor:pointer;position:relative;transition:background 0.12s;font-size:12px}
+.cal-day:hover{background:var(--bg)}
+.cal-day.today{background:var(--text);color:#fff}
+.cal-day.other{color:var(--text3)}
+.cal-day-num{font-weight:500;font-size:12px;line-height:1;margin-bottom:3px}
+.cal-event{font-size:9px;padding:1px 4px;border-radius:3px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.cal-event.red{background:#fee2e2;color:#991b1b}
+.cal-event.amber{background:#fef3c7;color:#92400e}
+.cal-event.green{background:#dcfce7;color:#166534}
+.cal-event.blue{background:#dbeafe;color:#1e40af}
+.cal-day.today .cal-event.red{background:rgba(255,100,100,0.25);color:#fca5a5}
+.cal-day.today .cal-event.amber{background:rgba(255,200,100,0.25);color:#fde68a}
+.cal-upcoming{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
+.up-item{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.up-item:last-child{border-bottom:none}
+.up-date{width:36px;height:36px;background:var(--surface2);border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.up-date .d{font-size:14px;font-weight:600;line-height:1}
+.up-date .m{font-size:9px;color:var(--text3);text-transform:uppercase}
+.up-title{font-size:12px;font-weight:600}
+.up-sub{font-size:11px;color:var(--text2);margin-top:1px}
+
+/* ── AI Chat ── */
+.ai-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;height:500px}
+.ai-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.ai-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.ai-head-title{font-size:14px;font-weight:600}
+.ai-head-sub{font-size:11px;color:var(--text2);margin-left:auto}
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ai-msg{display:flex;gap:10px;align-items:flex-start}
+.ai-msg.user{flex-direction:row-reverse}
+.ai-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.ai-avatar.bot{background:var(--text);color:#fff}
+.ai-avatar.user{background:var(--blue-bg);color:var(--blue-text)}
+.ai-bubble{max-width:80%;padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.6}
+.ai-msg.bot .ai-bubble{background:var(--surface2);border:1px solid var(--border);border-radius:4px 12px 12px 12px}
+.ai-msg.user .ai-bubble{background:var(--text);color:#fff;border-radius:12px 4px 12px 12px}
+.ai-bubble.loading{color:var(--text2)}
+.ai-input-row{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
+.ai-input{flex:1;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;background:var(--bg);color:var(--text);outline:none}
+.ai-input:focus{border-color:var(--blue);background:#fff}
+.ai-send{padding:9px 16px;background:var(--text);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:background 0.15s}
+.ai-send:hover{background:#333}
+.ai-chips{padding:0 16px 10px;display:flex;gap:6px;flex-wrap:wrap}
+.ai-chip{padding:5px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:11px;cursor:pointer;color:var(--text2);transition:all 0.15s;font-weight:500}
+.ai-chip:hover{background:var(--blue-bg);color:var(--blue-text);border-color:#93c5fd}
+
+/* ── Submit submissions view ── */
+.submissions-wrap{margin-top:10px}
+.sub-row{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border)}
+.sub-row:last-child{border-bottom:none}
+.sub-name{flex:1;font-size:13px;font-weight:500}
+.sub-meta{font-size:11px;color:var(--text2)}
+.sub-status{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+.sub-status.submitted{background:var(--green-bg);color:var(--green-text)}
+.sub-status.missing{background:var(--red-bg);color:var(--red-text)}
+
+/* ── Section headers ── */
+.sec-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:700;letter-spacing:-0.4px}
+.page-sub{font-size:13px;color:var(--text2);margin-top:2px}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);padding:28px;width:500px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-md)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:18px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+
+/* ── Tabs ── */
+.tab-bar{display:flex;gap:4px;background:var(--surface2);border-radius:8px;padding:4px;margin-bottom:16px;width:fit-content}
+.tab{padding:6px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);border:none;background:transparent;transition:all 0.15s}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty-icon{font-size:32px;margin-bottom:10px;opacity:0.4}
+.empty-text{font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">ClassHub</div>
+    <div class="login-sub">CS302 · Year 2 Assignment Portal</div>
+    <label class="login-label">Class code</label>
+    <input class="login-input" id="login-class-code" type="text" placeholder="e.g. CS302-2026" />
+
+    <label class="login-label">Email</label>
+    <input class="login-input" id="login-email" type="email" placeholder="you@example.com" />
+
+    <label class="login-label">Password</label>
+    <input class="login-input" id="login-password" type="password" placeholder="••••••••" />
+
+    <div id="login-error" style="display:none;color:var(--red);font-size:12px;margin-top:8px"></div>
+
+    <button class="btn-primary" onclick="login()">Sign in</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;height:100vh;overflow:hidden;flex-direction:column">
+  <nav class="topnav">
+    <div class="topnav-brand">ClassHub</div>
+    <div class="topnav-tabs">
+      <button class="tnav active" onclick="showPane('dashboard',this)">Dashboard</button>
+      <button class="tnav" onclick="showPane('assignments',this)" id="nav-assignments">Assignments</button>
+      <button class="tnav" id="nav-submit" onclick="showPane('submit',this)">Submit Work</button>
+      <button class="tnav" onclick="showPane('announcements',this)" id="nav-ann">Announcements</button>
+      <button class="tnav" onclick="showPane('calendar',this)">Calendar</button>
+      <button class="tnav" onclick="showPane('ai',this)">AI Assistant</button>
+    </div>
+    <div class="topnav-right">
+      <span class="role-chip" id="role-chip">Rep</span>
+      <span class="user-name" id="user-name-display">—</span>
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+  </nav>
+
+  <div class="main-content" id="main-content">
+
+    <!-- DASHBOARD -->
+    <div class="pane active" id="pane-dashboard">
+      <div class="page-header">
+        <div><div class="page-title">Dashboard</div><div class="page-sub" id="dash-greeting">Good morning</div></div>
+        <div style="display:flex;gap:8px" id="dash-actions"></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card blue"><div class="stat-num" id="stat-open">0</div><div class="stat-lbl">Open assignments</div></div>
+        <div class="stat-card red"><div class="stat-num" id="stat-due">0</div><div class="stat-lbl">Due this week</div></div>
+        <div class="stat-card amber"><div class="stat-num" id="stat-ann-count">0</div><div class="stat-lbl">Announcements</div></div>
+        <div class="stat-card green"><div class="stat-num" id="stat-submitted">0</div><div class="stat-lbl">My submissions</div></div>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="sec-label">Recent assignments</div>
+          <div class="card" id="dash-assign-list"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No assignments yet</div></div></div>
+          <div class="sec-label">Latest announcements</div>
+          <div class="card" id="dash-ann-list"><div class="empty"><div class="empty-icon">📢</div><div class="empty-text">No announcements yet</div></div></div>
+        </div>
+        <div>
+          <div class="sec-label">Calendar</div>
+          <div class="cal-wrap" id="mini-cal"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASSIGNMENTS -->
+    <div class="pane" id="pane-assignments">
+      <div class="page-header">
+        <div><div class="page-title">Assignments</div><div class="page-sub">All posted assignments</div></div>
+        <div id="assign-post-btn"></div>
+      </div>
+      <div class="tab-bar">
+        <button class="tab active" onclick="filterAssign('all',this)">All</button>
+        <button class="tab" onclick="filterAssign('active',this)">Active</button>
+        <button class="tab" onclick="filterAssign('submitted',this)">Submitted</button>
+      </div>
+      <div class="card" id="full-assign-list"></div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="pane" id="pane-submit">
+      <div class="page-header">
+        <div><div class="page-title">Submit Work</div><div class="page-sub">Upload your assignment files</div></div>
+      </div>
+      <div id="submit-content"></div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="pane" id="pane-announcements">
+      <div class="page-header">
+        <div><div class="page-title">Announcements</div><div class="page-sub">Class notices and updates</div></div>
+        <div id="ann-post-btn"></div>
+      </div>
+      <div class="card" id="full-ann-list"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="pane" id="pane-calendar">
+      <div class="page-header">
+        <div><div class="page-title">Calendar</div><div class="page-sub">Assignment deadlines and events</div></div>
+        <div id="cal-actions"></div>
+      </div>
+      <div id="full-cal-wrap" style="max-width:900px"></div>
+    </div>
+
+    <!-- AI ASSISTANT -->
+    <div class="pane" id="pane-ai">
+      <div class="page-header">
+        <div><div class="page-title">AI Assistant</div><div class="page-sub">Ask anything about assignments, deadlines, or get help</div></div>
+      </div>
+      <div class="two-col" style="grid-template-columns:1fr 300px">
+        <div class="ai-panel">
+          <div class="ai-head">
+            <div class="ai-dot"></div>
+            <div class="ai-head-title">ClassHub AI</div>
+            <div class="ai-head-sub">Powered by Claude</div>
+          </div>
+          <div class="ai-messages" id="ai-messages">
+            <div class="ai-msg bot">
+              <div class="ai-avatar bot">AI</div>
+              <div class="ai-bubble">Hi! I'm your ClassHub AI assistant. I know all about your current assignments and deadlines. Ask me anything — I can summarize what's due, help you plan your week, explain assignment requirements, or answer academic questions.</div>
+            </div>
+          </div>
+          <div class="ai-chips" id="ai-chips">
+            <div class="ai-chip" onclick="askChip(this)">What's due this week?</div>
+            <div class="ai-chip" onclick="askChip(this)">Summarize all assignments</div>
+            <div class="ai-chip" onclick="askChip(this)">Which is most urgent?</div>
+            <div class="ai-chip" onclick="askChip(this)">Help me plan my study time</div>
+          </div>
+          <div class="ai-input-row">
+            <input class="ai-input" id="ai-input" placeholder="Ask about assignments, deadlines, or anything…" onkeydown="if(event.key==='Enter')sendAI()"/>
+            <button class="ai-send" onclick="sendAI()">Send</button>
+          </div>
+        </div>
+        <div>
+          <div class="sec-label">Quick context</div>
+          <div class="card" id="ai-context-card" style="padding:14px"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- POST ASSIGNMENT MODAL -->
+<div class="modal-overlay" id="modal-assignment">
+  <div class="modal">
+    <h3>Post new assignment</h3>
+    <div class="form-row"><label class="form-label">Title</label><input class="form-ctrl" id="ma-title" placeholder="Assignment title"/></div>
+    <div class="form-row"><label class="form-label">Subject / Course</label><input class="form-ctrl" id="ma-subject" placeholder="e.g. Database Management Systems"/></div>
+    <div class="form-row"><label class="form-label">Description</label><textarea class="form-ctrl" id="ma-desc" rows="3" placeholder="What students need to do…"></textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-row"><label class="form-label">Due date</label><input class="form-ctrl" id="ma-due" type="date"/></div>
+      <div class="form-row"><label class="form-label">Marks</label><input class="form-ctrl" id="ma-marks" type="number" placeholder="e.g. 30"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-assignment')">Cancel</button>
+      <button class="btn blue" onclick="postAssignment()">Post assignment</button>
+    </div>
+  </div>
+</div>
+
+<!-- POST ANNOUNCEMENT MODAL -->
+<div class="modal-overlay" id="modal-ann">
+  <div class="modal">
+    <h3>Post announcement</h3>
+    <div class="form-row"><label class="form-label">Title</label><input class="form-ctrl" id="mnn-title" placeholder="Announcement title"/></div>
+    <div class="form-row"><label class="form-label">Message</label><textarea class="form-ctrl" id="mnn-body" rows="4" placeholder="Write your announcement…"></textarea></div>
+    <div class="form-row">
+      <label class="form-label">Type</label>
+      <select class="form-ctrl" id="mnn-type">
+        <option value="info">ℹ️ Info</option>
+        <option value="alert">⚠️ Alert</option>
+        <option value="success">✅ Update</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-ann')">Cancel</button>
+      <button class="btn blue" onclick="postAnnouncement()">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+
+<script>
+  // TODO: Replace these placeholders with your Firebase project config.
+  // Config values are not secrets, but you must set them correctly.
+  const firebaseConfig = {
+    apiKey: "AIzaSyBVdgbFpl5l32zyBQmp2GQYw16ALNtYVak",
+    authDomain: "classhub-system.firebaseapp.com",
+    projectId: "classhub-system",
+    storageBucket: "classhub-system.firebasestorage.app",
+    messagingSenderId: "30775056113",
+    appId: "1:30775056113:web:46410af344ad907d4afb50",
+    measurementId: "G-5LN797C73X"
+  };
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+</script>
+
+<script>
+// ── State ──
+let currentUser = null; // display name
+let currentUserUid = null;
+let currentRole = null; // 'rep' | 'student' | 'lecturer'
+let classId = null;
+
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let currentAssignFilter = 'all';
+
+let assignments = [];
+let announcements = [];
+let submissions = [];
+
+let unsubAssignments = null;
+let unsubAnnouncements = null;
+let unsubSubmissions = null;
+let unsubMembership = null;
+
+// Firebase app instances (initialized once)
+let auth = null;
+let db = null;
+let storage = null;
+let functions = null;
+
+function initFirebase() {
+  auth = firebase.auth();
+  db = firebase.firestore();
+  storage = firebase.storage();
+  functions = firebase.app().functions('us-central1');
+}
+
+function getAssignments() { return assignments; }
+function getAnnouncements() { return announcements; }
+function getSubmissions() { return submissions; }
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.style.display = msg ? 'block' : 'none';
+}
+
+async function login() {
+  initFirebase();
+
+  const code = document.getElementById('login-class-code').value.trim();
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value;
+
+  showLoginError('');
+
+  if (!code || !email || !pass) {
+    showLoginError('Please enter class code, email, and password.');
+    return;
+  }
+
+  classId = code;
+
+  try {
+    const cred = await auth.signInWithEmailAndPassword(email, pass);
+    currentUserUid = cred.user.uid;
+    currentUser = cred.user.email;
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+
+    bindMembership();
+  } catch (e) {
+    showLoginError(e?.message || 'Login failed. Check credentials and try again.');
+  }
+}
+
+function clearSubscriptions() {
+  if (unsubAssignments) { unsubAssignments(); unsubAssignments = null; }
+  if (unsubAnnouncements) { unsubAnnouncements(); unsubAnnouncements = null; }
+  if (unsubSubmissions) { unsubSubmissions(); unsubSubmissions = null; }
+}
+
+function bindMembership() {
+  if (!classId || !currentUserUid) return;
+
+  if (unsubMembership) { unsubMembership(); unsubMembership = null; }
+  clearSubscriptions();
+  assignments = [];
+  announcements = [];
+  submissions = [];
+
+  unsubMembership = db
+    .collection('classes')
+    .doc(classId)
+    .collection('members')
+    .doc(currentUserUid)
+    .onSnapshot((snap) => {
+      if (!snap.exists) {
+        showLoginError('You are not enrolled in this class. Ask the class rep to add you.');
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+        currentRole = null;
+        currentUser = null;
+        currentUserUid = null;
+        return;
+      }
+
+      const m = snap.data() || {};
+      currentRole = m.role;
+      currentUser =
+        m.displayName ||
+        m.studentName ||
+        (m.studentId ? m.studentId : auth.currentUser?.email);
+
+      initApp();
+    });
+}
+
+function logout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  showLoginError('');
+
+  const passEl = document.getElementById('login-password');
+  if (passEl) passEl.value = '';
+
+  if (unsubMembership) { unsubMembership(); unsubMembership = null; }
+  clearSubscriptions();
+  assignments = [];
+  announcements = [];
+  submissions = [];
+
+  currentUser = null;
+  currentUserUid = null;
+  currentRole = null;
+  classId = null;
+
+  if (auth) auth.signOut();
+}
+
+function subscribeData() {
+  const classRef = db.collection('classes').doc(classId);
+
+  if (unsubAssignments) unsubAssignments();
+  if (unsubAnnouncements) unsubAnnouncements();
+  if (unsubSubmissions) unsubSubmissions();
+
+  unsubAssignments = classRef
+    .collection('assignments')
+    .orderBy('due', 'asc')
+    .onSnapshot((snap) => {
+      assignments = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderAll();
+    });
+
+  unsubAnnouncements = classRef
+    .collection('announcements')
+    .orderBy('postedAt', 'desc')
+    .onSnapshot((snap) => {
+      announcements = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderAll();
+    });
+
+  if (currentRole === 'student') {
+    unsubSubmissions = classRef
+      .collection('submissions')
+      .where('studentUid', '==', currentUserUid)
+      .orderBy('submittedAt', 'desc')
+      .onSnapshot((snap) => {
+        submissions = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        renderAll();
+      });
+  } else {
+    unsubSubmissions = classRef
+      .collection('submissions')
+      .orderBy('submittedAt', 'desc')
+      .onSnapshot((snap) => {
+        submissions = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        renderAll();
+      });
+  }
+}
+
+// ── App init ──
+function initApp() {
+  if (!currentRole) return;
+
+  document.getElementById('user-name-display').textContent = currentUser;
+  const chip = document.getElementById('role-chip');
+  chip.textContent =
+    currentRole === 'rep' ? 'Class Rep' : currentRole === 'student' ? 'Student' : 'Lecturer';
+  chip.className = 'role-chip ' + (currentRole === 'rep' ? 'rep' : currentRole === 'student' ? 'student' : 'lecturer');
+
+  document.getElementById('nav-submit').style.display = '';
+
+  const h = new Date().getHours();
+  document.getElementById('dash-greeting').textContent =
+    (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', ' + currentUser + '!';
+
+  const da = document.getElementById('dash-actions');
+  da.innerHTML = '';
+  if (currentRole !== 'student') {
+    da.innerHTML += `<button class="btn blue" onclick="openModal('modal-assignment')">+ Post assignment</button>`;
+    da.innerHTML += `<button class="btn" onclick="openModal('modal-ann')">+ Announcement</button>`;
+  }
+
+  const apb = document.getElementById('assign-post-btn');
+  apb.innerHTML = currentRole !== 'student' ? `<button class="btn blue" onclick="openModal('modal-assignment')">+ Post assignment</button>` : '';
+
+  document.getElementById('ann-post-btn').innerHTML =
+    currentRole !== 'student' ? `<button class="btn blue" onclick="openModal('modal-ann')">+ Post announcement</button>` : '';
+
+  const calActionsEl = document.getElementById('cal-actions');
+  if (calActionsEl) {
+    calActionsEl.innerHTML = `<button class="btn sm" onclick="exportIcs()">Export .ics</button>`;
+  }
+
+  subscribeData();
+  renderAll();
+}
+
+function renderAll() {
+  updateStats();
+  renderDashAssignments();
+  renderDashAnn();
+  renderMiniCal();
+  renderFullAssignments();
+  renderFullAnn();
+  renderFullCal();
+  renderSubmitPane();
+  renderAIContext();
+}
+
+// ── Stats ──
+function updateStats() {
+  const assigns = getAssignments();
+  const anns = getAnnouncements();
+  const subs = getSubmissions();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const weekEnd = new Date(today); weekEnd.setDate(weekEnd.getDate()+7);
+
+  document.getElementById('stat-open').textContent = assigns.length;
+  document.getElementById('stat-due').textContent = assigns.filter(a=>{const d=new Date(a.due);return d>=today&&d<=weekEnd}).length;
+  document.getElementById('stat-ann-count').textContent = anns.length;
+  const submittedCount = currentRole==='student'
+    ? subs.filter(s=>s.studentUid===currentUserUid).length
+    : subs.length;
+  document.getElementById('stat-submitted').textContent = submittedCount;
+}
+
+// ── Urgency ──
+function urgency(dueStr) {
+  const due = new Date(dueStr); due.setHours(23,59,0,0);
+  const now = new Date();
+  const diff = (due - now) / 86400000;
+  if (diff < 0) return {label:'Overdue',cls:'red'};
+  if (diff < 2) return {label:'Due tomorrow',cls:'red'};
+  if (diff < 7) return {label:'Due '+formatDate(dueStr,true),cls:'amber'};
+  return {label:formatDate(dueStr,true),cls:'green'};
+}
+
+function formatDate(s, short=false) {
+  const d = new Date(s);
+  if (short) return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function timeAgo(iso) {
+  const diff = (Date.now() - new Date(iso)) / 1000;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return Math.floor(diff/60)+'m ago';
+  if (diff < 86400) return Math.floor(diff/3600)+'h ago';
+  return Math.floor(diff/86400)+'d ago';
+}
+
+// ── Dashboard assigns ──
+function renderDashAssignments() {
+  const el = document.getElementById('dash-assign-list');
+  const assigns = getAssignments().slice(0,4);
+  if (!assigns.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No assignments yet</div></div>'; return; }
+  el.innerHTML = '<div class="card-head"><span class="card-head-title">Assignments</span><button class="btn sm" onclick="showPane(\'assignments\',null)">View all</button></div><div class="card-body">';
+  assigns.forEach(a => {
+    const u = urgency(a.due);
+    el.innerHTML += `<div class="a-row"><div class="a-dot ${u.cls}"></div><div class="a-info"><div class="a-title">${a.title}</div><div class="a-sub">${a.postedBy} · ${a.subject}</div></div><div class="a-actions"><span class="pill ${u.cls}">${u.label}</span>${currentRole==='student'?`<button class="btn sm" onclick="showPane('submit',null)">Submit</button>`:''}</div></div>`;
+  });
+  el.innerHTML += '</div>';
+}
+
+// ── Dashboard announcements ──
+function renderDashAnn() {
+  const el = document.getElementById('dash-ann-list');
+  const anns = getAnnouncements().slice(0,3);
+  if (!anns.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📢</div><div class="empty-text">No announcements yet</div></div>'; return; }
+  const icons = {info:'ℹ️',alert:'⚠️',success:'✅'};
+  const colors = {info:'background:var(--blue-bg)',alert:'background:var(--amber-bg)',success:'background:var(--green-bg)'};
+  el.innerHTML = '<div class="card-head"><span class="card-head-title">Announcements</span><button class="btn sm" onclick="showPane(\'announcements\',null)">View all</button></div><div class="card-body">';
+  anns.forEach(a => {
+    el.innerHTML += `<div class="ann-row"><div class="ann-icon" style="${colors[a.type]}">${icons[a.type]}</div><div class="ann-body"><div class="ann-title">${a.title}</div><div class="ann-text">${a.body.substring(0,90)}${a.body.length>90?'…':''}</div><div class="ann-meta">${timeAgo(a.postedAt)} · ${a.postedBy}</div></div></div>`;
+  });
+  el.innerHTML += '</div>';
+}
+
+// ── Full assignments ──
+function renderFullAssignments() {
+  const el = document.getElementById('full-assign-list');
+  const subs = getSubmissions();
+  let assigns = getAssignments();
+  if (currentRole==='student' && currentAssignFilter==='submitted') assigns = assigns.filter(a=>subs.some(s=>s.assignmentId===a.id&&s.studentUid===currentUserUid));
+  else if (currentRole==='student' && currentAssignFilter==='active') assigns = assigns.filter(a=>!subs.some(s=>s.assignmentId===a.id&&s.studentUid===currentUserUid));
+  if (!assigns.length) { el.innerHTML='<div class="empty" style="padding:40px"><div class="empty-icon">📋</div><div class="empty-text">No assignments in this filter</div></div>'; return; }
+  el.innerHTML = '<div class="card-body">';
+  assigns.forEach(a => {
+    const u = urgency(a.due);
+    const submitted = currentRole==='student' ? subs.some(s=>s.assignmentId===a.id&&s.studentUid===currentUserUid) : false;
+    el.innerHTML += `<div class="a-row" style="align-items:flex-start">
+      <div class="a-dot ${u.cls}" style="margin-top:6px"></div>
+      <div class="a-info">
+        <div class="a-title">${a.title}</div>
+        <div class="a-sub">${a.postedBy} · ${a.subject} · ${a.marks} marks</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:5px;line-height:1.5">${a.desc}</div>
+        ${currentRole!=='student'?renderSubmissionsCount(a.id):''}
+      </div>
+      <div class="a-actions" style="margin-top:2px">
+        <span class="pill ${u.cls}">${u.label}</span>
+        ${currentRole==='student'?`<span class="pill ${submitted?'green':'gray'}">${submitted?'Submitted':'Pending'}</span>`:''}
+        ${currentRole==='student'&&!submitted?`<button class="btn sm" onclick="goSubmit('${a.id}')">Submit ↗</button>`:''}
+        ${currentRole!=='student'?`<button class="btn sm red" onclick="deleteAssignment('${a.id}')">Delete</button>`:''}
+      </div>
+    </div>`;
+  });
+  el.innerHTML += '</div>';
+}
+
+function renderSubmissionsCount(aid) {
+  const subs = getSubmissions().filter(s=>s.assignmentId===aid);
+  return `<div style="margin-top:6px;font-size:12px;color:var(--text2)">${subs.length} submission${subs.length!==1?'s':''} received</div>`;
+}
+
+function filterAssign(f,el) {
+  currentAssignFilter = f;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderFullAssignments();
+}
+
+function deleteAssignment(id) {
+  if (!confirm('Delete this assignment?')) return;
+  db.collection('classes')
+    .doc(classId)
+    .collection('assignments')
+    .doc(id)
+    .delete()
+    .catch(e => alert(e?.message || 'Failed to delete assignment.'));
+}
+
+// ── Full announcements ──
+function renderFullAnn() {
+  const el = document.getElementById('full-ann-list');
+  const anns = getAnnouncements();
+  if (!anns.length) { el.innerHTML='<div class="empty" style="padding:40px"><div class="empty-icon">📢</div><div class="empty-text">No announcements yet</div></div>'; return; }
+  const icons = {info:'ℹ️',alert:'⚠️',success:'✅'};
+  const colors = {info:'background:var(--blue-bg)',alert:'background:var(--amber-bg)',success:'background:var(--green-bg)'};
+  el.innerHTML = '<div class="card-body">';
+  anns.forEach(a => {
+    el.innerHTML += `<div class="ann-row">
+      <div class="ann-icon" style="${colors[a.type]}">${icons[a.type]}</div>
+      <div class="ann-body" style="flex:1">
+        <div class="ann-title">${a.title}</div>
+        <div class="ann-text">${a.body}</div>
+        <div class="ann-meta">${formatDate(a.postedAt)} · ${a.postedBy} (${a.postedByRole==='rep'?'Class Rep':a.postedByRole==='lecturer'?'Lecturer':'Student'})</div>
+      </div>
+      ${currentRole!=='student'?`<button class="btn sm red" style="flex-shrink:0;margin-top:4px" onclick="deleteAnn('${a.id}')">Delete</button>`:''}
+    </div>`;
+  });
+  el.innerHTML += '</div>';
+}
+
+function deleteAnn(id) {
+  if (!confirm('Delete this announcement?')) return;
+  db.collection('classes')
+    .doc(classId)
+    .collection('announcements')
+    .doc(id)
+    .delete()
+    .catch(e => alert(e?.message || 'Failed to delete announcement.'));
+}
+
+// ── Submit pane ──
+function renderSubmitPane() {
+  const el = document.getElementById('submit-content');
+  if (currentRole!=='student') {
+    el.innerHTML = renderLecturerSubmissions();
+    return;
+  }
+  const assigns = getAssignments();
+  el.innerHTML = `<div id="submit-toast" class="success-toast">Assignment submitted successfully! The class rep has been notified.</div>
+  <div class="form-section">
+    <h3>Submit assignment</h3>
+    <div class="form-row"><label class="form-label">Assignment</label>
+    <select class="form-ctrl" id="sub-assign">
+      ${assigns.map(a=>`<option value="${a.id}">${a.title} — Due ${formatDate(a.due,true)}</option>`).join('')}
+    </select></div>
+    <div class="form-row"><label class="form-label">Your name</label><input class="form-ctrl" id="sub-name" value="${currentUser}" readonly/></div>
+    <div class="form-row"><label class="form-label">Student ID</label><input class="form-ctrl" id="sub-id" placeholder="e.g. CS2024-0042"/></div>
+    <div class="form-row"><label class="form-label">Upload file</label>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <div style="font-size:24px;margin-bottom:8px;opacity:0.4">📎</div>
+        <span id="upload-label">Click to browse or drag & drop</span><br>
+        <span style="font-size:11px">PDF, DOCX, ZIP — up to 20 MB</span>
+        <input type="file" id="file-input" style="display:none" onchange="fileSelected(this)"/>
+      </div>
+    </div>
+    <div class="form-row"><label class="form-label">Notes to lecturer (optional)</label><textarea class="form-ctrl" id="sub-notes" rows="3" placeholder="Any notes…"></textarea></div>
+    <div class="form-actions"><button class="btn" onclick="showPane('assignments',null)">Cancel</button><button class="btn blue" onclick="submitAssignment()">Submit assignment</button></div>
+  </div>`;
+}
+
+function fileSelected(input) {
+  if (input.files[0]) document.getElementById('upload-label').textContent = '✓ ' + input.files[0].name;
+}
+
+function renderLecturerSubmissions() {
+  const assigns = getAssignments();
+  const subs = getSubmissions();
+  let html = '';
+  assigns.forEach(a => {
+    const mySubs = subs.filter(s=>s.assignmentId===a.id);
+    html += `<div class="card" style="margin-bottom:16px">
+      <div class="card-head"><span class="card-head-title">${a.title}</span><span class="pill ${urgency(a.due).cls}">${mySubs.length} submissions</span></div>
+      <div class="card-body">`;
+    if (!mySubs.length) {
+      html += '<div class="empty" style="padding:20px"><div class="empty-text">No submissions yet</div></div>';
+    } else {
+      mySubs.forEach(s => {
+        html += `<div class="sub-row"><div class="sub-name">${s.studentName}<span style="font-size:11px;color:var(--text3);margin-left:8px">${s.studentId}</span></div><div class="sub-meta">${formatDate(s.submittedAt)} · ${s.fileName||'No file'}${s.filePath?`<div style="margin-top:6px"><button class="btn sm" onclick="openSubmissionFile('${encodeURIComponent(s.filePath)}')">Open file</button></div>`:''}</div><span class="sub-status submitted">Submitted</span></div>`;
+      });
+    }
+    html += '</div></div>';
+  });
+  return html || '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No assignments posted</div></div>';
+}
+
+async function openSubmissionFile(encodedPath) {
+  if (!encodedPath) return;
+  try {
+    const path = decodeURIComponent(encodedPath);
+    const url = await storage.ref(path).getDownloadURL();
+    window.open(url, '_blank');
+  } catch (e) {
+    alert(e?.message || 'Failed to open file.');
+  }
+}
+
+function goSubmit(id) {
+  showPane('submit', null);
+  setTimeout(()=>{ const s=document.getElementById('sub-assign'); if(s){for(let o of s.options){if(o.value===id){o.selected=true;break;}}} }, 100);
+}
+
+function submitAssignment() {
+  if (currentRole!=='student') return;
+  const aid = document.getElementById('sub-assign')?.value;
+  const sid = document.getElementById('sub-id')?.value.trim();
+  const file = document.getElementById('file-input')?.files[0];
+  if (!aid) return;
+  const notes = document.getElementById('sub-notes')?.value || '';
+  if (!file) {
+    alert('Please upload a file before submitting.');
+    return;
+  }
+
+  const subs = getSubmissions();
+  if (subs.some(s=>s.assignmentId===aid&&s.studentUid===currentUserUid)) {
+    alert('You have already submitted this assignment.');
+    return;
+  }
+
+  const safeFileName = (file.name || 'file').replace(/\//g, '_');
+  const submissionId = Date.now();
+  const storagePath = `submission_files/${classId}/${aid}/${currentUserUid}/${submissionId}/${safeFileName}`;
+
+  (async () => {
+    try {
+      await storage.ref(storagePath).put(file);
+
+      await db.collection('classes').doc(classId).collection('submissions').add({
+        assignmentId: aid,
+        studentUid: currentUserUid,
+        studentName: currentUser,
+        studentId: sid || 'N/A',
+        fileName: file.name,
+        filePath: storagePath,
+        notes,
+        submittedAt: new Date().toISOString(),
+      });
+
+      const toast = document.getElementById('submit-toast');
+      if (toast) { toast.style.display='block'; setTimeout(()=>toast.style.display='none',4000); }
+
+      // Clear file input for the next submission.
+      const fileInput = document.getElementById('file-input');
+      if (fileInput) fileInput.value = '';
+      const uploadLabel = document.getElementById('upload-label');
+      if (uploadLabel) uploadLabel.textContent = 'Click to browse or drag & drop';
+
+      const notesEl = document.getElementById('sub-notes');
+      if (notesEl) notesEl.value = '';
+    } catch (e) {
+      alert(e?.message || 'Failed to submit. Please try again.');
+    }
+  })();
+}
+
+// ── Mini calendar ──
+function renderMiniCal() {
+  const el = document.getElementById('mini-cal');
+  el.innerHTML = buildCal(calYear, calMonth, true);
+}
+
+function renderFullCal() {
+  const el = document.getElementById('full-cal-wrap');
+  el.innerHTML = `<div class="cal-wrap">${buildCal(calYear, calMonth, false)}</div>`;
+}
+
+function exportIcs() {
+  const assigns = getAssignments();
+  if (!assigns.length) {
+    alert('No assignments to export.');
+    return;
+  }
+
+  const escapeIcs = (s) =>
+    String(s ?? '')
+      .replace(/\\/g, '\\\\')
+      .replace(/\n/g, '\\n')
+      .replace(/,/g, '\\,')
+      .replace(/;/g, '\\;');
+
+  const now = new Date();
+  const dtstamp = now
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z');
+
+  const events = assigns
+    .slice()
+    .sort((a, b) => String(a.due).localeCompare(String(b.due)))
+    .map((a) => {
+      const ymd = String(a.due || '').replace(/-/g, '');
+      const uid = `${classId || 'class'}-${a.id || a.title}-${ymd}`;
+      const summary = escapeIcs(`Assignment: ${a.title}`);
+      const description = escapeIcs(
+        `${a.subject || ''} ${a.marks != null ? `(${a.marks} marks)` : ''}\n\n${a.desc || ''}`
+      );
+
+      return `BEGIN:VEVENT\r\nUID:${uid}\r\nDTSTAMP:${dtstamp}\r\nDTSTART;VALUE=DATE:${ymd}\r\nSUMMARY:${summary}\r\nDESCRIPTION:${description}\r\nEND:VEVENT`;
+    })
+    .join('\r\n');
+
+  const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//ClassHub//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n${events}\r\nEND:VCALENDAR`;
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `classhub-${classId || 'calendar'}-deadlines.ics`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function buildCal(year, month, mini) {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const assigns = getAssignments();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const first = new Date(year, month, 1);
+  const startDay = (first.getDay()+6)%7;
+  const days = new Date(year, month+1, 0).getDate();
+
+  // Build event map
+  const evMap = {};
+  assigns.forEach(a => {
+    const key = a.due;
+    if (!evMap[key]) evMap[key] = [];
+    evMap[key].push({title:a.title.substring(0,12)+(a.title.length>12?'…':''), cls: urgency(a.due).cls});
+  });
+
+  let html = `<div class="cal-nav">
+    <button class="cal-arrow" onclick="calNav(-1,${mini?'true':'false'})">&#8249;</button>
+    <span class="cal-month-name">${months[month]} ${year}</span>
+    <button class="cal-arrow" onclick="calNav(1,${mini?'true':'false'})">&#8250;</button>
+  </div>
+  <div class="cal-grid">
+    <div class="cal-hd">Mo</div><div class="cal-hd">Tu</div><div class="cal-hd">We</div><div class="cal-hd">Th</div><div class="cal-hd">Fr</div><div class="cal-hd">Sa</div><div class="cal-hd">Su</div>`;
+
+  // Prev month padding
+  const prevDays = new Date(year, month, 0).getDate();
+  for (let i=startDay-1;i>=0;i--) {
+    html += `<div class="cal-day other"><div class="cal-day-num">${prevDays-i}</div></div>`;
+  }
+
+  for (let d=1; d<=days; d++) {
+    const date = new Date(year, month, d);
+    const isToday = date.getTime()===today.getTime();
+    const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const events = evMap[key]||[];
+    const limit = mini ? 1 : 3;
+    html += `<div class="cal-day ${isToday?'today':''}" style="${mini?'':'min-height:70px'}">
+      <div class="cal-day-num">${d}</div>
+      ${events.slice(0,limit).map(e=>`<div class="cal-event ${e.cls}">${e.title}</div>`).join('')}
+      ${events.length>limit?`<div style="font-size:9px;color:var(--text3)">+${events.length-limit} more</div>`:''}
+    </div>`;
+  }
+
+  // Next month padding
+  const totalCells = startDay + days;
+  const remaining = (7 - totalCells%7)%7;
+  for (let d=1;d<=remaining;d++) html += `<div class="cal-day other"><div class="cal-day-num">${d}</div></div>`;
+
+  html += '</div>';
+
+  // Upcoming strip (mini only)
+  if (mini) {
+    const upcoming = assigns.filter(a=>new Date(a.due)>=today).sort((a,b)=>new Date(a.due)-new Date(b.due)).slice(0,3);
+    if (upcoming.length) {
+      html += '<div class="cal-upcoming">';
+      upcoming.forEach(a => {
+        const d = new Date(a.due);
+        html += `<div class="up-item"><div class="up-date"><div class="d">${d.getDate()}</div><div class="m">${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}</div></div><div class="up-info"><div class="up-title">${a.title.substring(0,22)+'…'}</div><div class="up-sub">${a.subject.split(' ')[0]}</div></div></div>`;
+      });
+      html += '</div>';
+    }
+    html += `<div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--text3)">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block"></span>Urgent</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block"></span>Soon</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block"></span>Upcoming</span>
+    </div>`;
+  }
+
+  return html;
+}
+
+function calNav(dir, mini) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth=0; calYear++; }
+  if (calMonth < 0) { calMonth=11; calYear--; }
+  renderMiniCal();
+  renderFullCal();
+}
+
+// ── Post assignment ──
+function postAssignment() {
+  const title = document.getElementById('ma-title').value.trim();
+  const subject = document.getElementById('ma-subject').value.trim();
+  const desc = document.getElementById('ma-desc').value.trim();
+  const due = document.getElementById('ma-due').value;
+  const marks = document.getElementById('ma-marks').value;
+  if (!title||!due) { alert('Title and due date are required.'); return; }
+
+  (async () => {
+    try {
+      await db.collection('classes').doc(classId).collection('assignments').add({
+        title,
+        subject: subject || 'General',
+        desc: desc || 'No description provided.',
+        due,
+        marks: parseInt(marks) || 20,
+        postedBy: currentUser,
+        postedByRole: currentRole,
+        postedByUid: currentUserUid,
+        postedAt: new Date().toISOString(),
+      });
+
+      closeModal('modal-assignment');
+      ['ma-title','ma-subject','ma-desc','ma-marks'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('ma-due').value='';
+    } catch (e) {
+      alert(e?.message || 'Failed to post assignment.');
+    }
+  })();
+}
+
+// ── Post announcement ──
+function postAnnouncement() {
+  const title = document.getElementById('mnn-title').value.trim();
+  const body = document.getElementById('mnn-body').value.trim();
+  const type = document.getElementById('mnn-type').value;
+  if (!title||!body) { alert('Title and message are required.'); return; }
+
+  (async () => {
+    try {
+      await db.collection('classes').doc(classId).collection('announcements').add({
+        title,
+        body,
+        type,
+        postedBy: currentUser,
+        postedByRole: currentRole,
+        postedByUid: currentUserUid,
+        postedAt: new Date().toISOString(),
+      });
+
+      closeModal('modal-ann');
+      document.getElementById('mnn-title').value='';
+      document.getElementById('mnn-body').value='';
+    } catch (e) {
+      alert(e?.message || 'Failed to post announcement.');
+    }
+  })();
+}
+
+// ── Pane switching ──
+function showPane(id, navEl) {
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  document.querySelectorAll('.tnav').forEach(t=>t.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  else {
+    const map = {dashboard:0,assignments:1,submit:2,announcements:3,calendar:4,ai:5};
+    const idx = map[id];
+    if (idx!==undefined) {
+      const navs = document.querySelectorAll('.tnav');
+      if (navs[idx]) navs[idx].classList.add('active');
+    }
+  }
+  if (id==='submit') renderSubmitPane();
+}
+
+// ── Modal ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+});
+
+// ── AI ──
+function renderAIContext() {
+  const assigns = getAssignments().slice(0,4);
+  const el = document.getElementById('ai-context-card');
+  if (!el) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  el.innerHTML = '<div style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Current assignments</div>';
+  assigns.forEach(a => {
+    const u = urgency(a.due);
+    el.innerHTML += `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+      <div class="a-dot ${u.cls}" style="margin-top:4px"></div>
+      <div><div style="font-size:12px;font-weight:600">${a.title}</div><div style="font-size:11px;color:var(--text2)">${u.label} · ${a.marks}pts</div></div>
+    </div>`;
+  });
+}
+
+let aiHistory = [];
+
+function buildAISystemPrompt() {
+  const assigns = getAssignments();
+  const anns = getAnnouncements();
+  const subs = getSubmissions();
+  const today = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  return `You are ClassHub AI, a helpful assistant for a university class portal. Today is ${today}.
+
+Current user: ${currentUser} (role: ${currentRole==='rep'?'Class Representative':currentRole==='student'?'Student':'Lecturer'})
+
+ASSIGNMENTS:
+${assigns.map(a=>{
+  const due = new Date(a.due);
+  const diff = Math.round((due-new Date())/86400000);
+  const submitted = subs.some(s=>s.assignmentId===a.id&&s.studentUid===currentUserUid);
+  return `- "${a.title}" | Subject: ${a.subject} | Due: ${formatDate(a.due)} (${diff<0?'OVERDUE':diff===0?'TODAY':diff+' days away'}) | ${a.marks} marks | Posted by: ${a.postedBy} | ${submitted?'SUBMITTED by current user':'NOT submitted'} | Desc: ${a.desc.substring(0,100)}`;
+}).join('\n')}
+
+ANNOUNCEMENTS:
+${anns.slice(0,5).map(a=>`- "${a.title}" (${a.type}): ${a.body.substring(0,80)}...`).join('\n')}
+
+Be concise, helpful, and friendly. Format responses clearly. If asked about deadlines, be specific about dates. Help students plan and prioritize.`;
+}
+
+async function sendAI() {
+  const input = document.getElementById('ai-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  addAIMessage('user', msg);
+  aiHistory.push({role:'user',content:msg});
+
+  const loadId = 'load-'+Date.now();
+  addAIMessage('bot', '...', loadId);
+
+  try {
+    if (!functions) throw new Error('Firebase Functions not initialized.');
+    if (!functions.httpsCallable) throw new Error('Callable functions are not available.');
+    const callable = functions.httpsCallable('classhubAi');
+    const res = await callable({ classId, message: msg, history: aiHistory.slice(-18) });
+    const reply = res?.data?.reply || 'Sorry, I could not get a response. Please try again.';
+    aiHistory.push({role:'assistant',content:reply});
+    updateAIMessage(loadId, reply);
+  } catch(e) {
+    updateAIMessage(loadId, 'Error reaching the AI. Please check your connection and try again.');
+  }
+}
+
+function addAIMessage(role, text, id) {
+  const el = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = `ai-msg ${role}`;
+  if (id) div.id = id;
+  div.innerHTML = `<div class="ai-avatar ${role}">${role==='bot'?'AI':currentUser.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase()}</div><div class="ai-bubble ${text==='...'?'loading':''}">${text==='...'?'<span>Thinking…</span>':escHtml(text).replace(/\n/g,'<br>')}</div>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateAIMessage(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.querySelector('.ai-bubble').innerHTML = escHtml(text).replace(/\n/g,'<br>');
+  document.getElementById('ai-messages').scrollTop = 99999;
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function askChip(el) {
+  document.getElementById('ai-input').value = el.textContent;
+  sendAI();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+name: Deploy ClassHub to Firebase
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Install Cloud Functions dependencies
+        working-directory: functions
+        run: npm install
+
+      - name: Create functions env file
+        run: |
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" > functions/.env
+          if [ -n "${{ secrets.ANTHROPIC_MODEL }}" ]; then
+            echo "ANTHROPIC_MODEL=${{ secrets.ANTHROPIC_MODEL }}" >> functions/.env
+          fi
+
+      - name: Deploy Firestore rules, Storage rules, Hosting, and Functions
+        run: firebase deploy --project "${{ secrets.FIREBASE_PROJECT_ID }}" --non-interactive
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+

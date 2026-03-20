@@ -1,0 +1,34 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    function isMember(classId) {
+      return isAuthed() &&
+        exists(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid));
+    }
+
+    function roleOf(classId) {
+      return get(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid)).data.role;
+    }
+
+    function isRepOrLecturer(classId) {
+      return isMember(classId) &&
+        (roleOf(classId) == 'rep' || roleOf(classId) == 'lecturer');
+    }
+
+    function isStudent(classId) {
+      return isMember(classId) && roleOf(classId) == 'student';
+    }
+
+    match /submission_files/{classId}/{assignmentId}/{uid}/{submissionId}/{fileName} {
+      allow read: if isRepOrLecturer(classId) || uid == request.auth.uid;
+      allow write: if isStudent(classId) && uid == request.auth.uid;
+      allow delete: if false;
+    }
+  }
+}
+
