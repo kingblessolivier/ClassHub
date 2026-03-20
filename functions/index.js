@@ -126,7 +126,11 @@ exports.classhubAi = functions.https.onCall(async (data, context) => {
     studentDisplayName: memberDisplayName,
   });
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const runtimeConfig = typeof functions.config === "function" ? functions.config() : {};
+  const apiKey =
+    process.env.ANTHROPIC_API_KEY ||
+    runtimeConfig?.anthropic?.apikey ||
+    runtimeConfig?.anthropic?.api_key;
   if (!apiKey) {
     throw new functions.https.HttpsError(
       "failed-precondition",
@@ -134,7 +138,10 @@ exports.classhubAi = functions.https.onCall(async (data, context) => {
     );
   }
 
-  const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
+  const model =
+    process.env.ANTHROPIC_MODEL ||
+    runtimeConfig?.anthropic?.model ||
+    "claude-sonnet-4-20250514";
 
   const anthropicMessages = (history.length ? history : [{ role: "user", content: message }])
     .filter((m) => m && typeof m.content === "string" && m.content.trim().length > 0)

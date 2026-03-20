@@ -28,12 +28,14 @@ jobs:
         working-directory: functions
         run: npm install
 
-      - name: Create functions env file
+      - name: Set Functions runtime config
         run: |
-          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" > functions/.env
+          firebase functions:config:set anthropic.apikey="${{ secrets.ANTHROPIC_API_KEY }}" --project "${{ secrets.FIREBASE_PROJECT_ID }}" --non-interactive
           if [ -n "${{ secrets.ANTHROPIC_MODEL }}" ]; then
-            echo "ANTHROPIC_MODEL=${{ secrets.ANTHROPIC_MODEL }}" >> functions/.env
+            firebase functions:config:set anthropic.model="${{ secrets.ANTHROPIC_MODEL }}" --project "${{ secrets.FIREBASE_PROJECT_ID }}" --non-interactive
           fi
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Deploy Firestore rules, Storage rules, Hosting, and Functions
         run: firebase deploy --project "${{ secrets.FIREBASE_PROJECT_ID }}" --non-interactive

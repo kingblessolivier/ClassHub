@@ -1,0 +1,9 @@
+# email,password,displayName,classId,role
+rep1@classhub.edu,Pass1234!,Class Rep One,CS302-2026,rep
+rep2@classhub.edu,Pass1234!,Class Rep Two,CS302-2026,rep
+lecturer1@classhub.edu,Pass1234!,Lecturer One,CS302-2026,lecturer
+lecturer2@classhub.edu,Pass1234!,Lecturer Two,CS302-2026,lecturer
+student1@classhub.edu,Pass1234!,Student One,CS302-2026,student
+student2@classhub.edu,Pass1234!,Student Two,CS302-2026,student
+# Same user in another class (multi-class membership):
+# student1@classhub.edu,Pass1234!,Student One,CS401-2026,student

@@ -251,9 +251,25 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
     <label class="login-label">Password</label>
     <input class="login-input" id="login-password" type="password" placeholder="••••••••" />
 
+    <div id="signup-fields" style="display:none">
+      <label class="login-label">Full name</label>
+      <input class="login-input" id="signup-name" type="text" placeholder="e.g. Olivier N" />
+
+      <label class="login-label">Role</label>
+      <select class="login-input" id="signup-role">
+        <option value="student">Student</option>
+        <option value="lecturer">Lecturer</option>
+        <option value="rep">Class Representative</option>
+      </select>
+
+      <label class="login-label">Confirm password</label>
+      <input class="login-input" id="signup-confirm-password" type="password" placeholder="••••••••" />
+    </div>
+
     <div id="login-error" style="display:none;color:var(--red);font-size:12px;margin-top:8px"></div>
 
-    <button class="btn-primary" onclick="login()">Sign in</button>
+    <button class="btn-primary" id="auth-submit-btn" onclick="login()">Sign in</button>
+    <button class="btn" id="auth-switch-btn" style="width:100%;margin-top:8px" onclick="toggleAuthMode()">Create account</button>
   </div>
 </div>
 
@@ -426,7 +442,7 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+<!-- Firebase Storage removed (free plan — using Google Drive links instead) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
 
 <script>
@@ -470,13 +486,12 @@ let unsubMembership = null;
 // Firebase app instances (initialized once)
 let auth = null;
 let db = null;
-let storage = null;
 let functions = null;
+let authMode = "login";
 
 function initFirebase() {
   auth = firebase.auth();
   db = firebase.firestore();
-  storage = firebase.storage();
   functions = firebase.app().functions('us-central1');
 }
 
@@ -489,6 +504,21 @@ function showLoginError(msg) {
   if (!el) return;
   el.textContent = msg || '';
   el.style.display = msg ? 'block' : 'none';
+}
+
+function toggleAuthMode() {
+  authMode = authMode === "login" ? "signup" : "login";
+  const signupFields = document.getElementById("signup-fields");
+  const submitBtn = document.getElementById("auth-submit-btn");
+  const switchBtn = document.getElementById("auth-switch-btn");
+  if (!signupFields || !submitBtn || !switchBtn) return;
+
+  const isSignup = authMode === "signup";
+  signupFields.style.display = isSignup ? "block" : "none";
+  submitBtn.textContent = isSignup ? "Create account" : "Sign in";
+  submitBtn.setAttribute("onclick", isSignup ? "register()" : "login()");
+  switchBtn.textContent = isSignup ? "Back to sign in" : "Create account";
+  showLoginError("");
 }
 
 async function login() {
@@ -518,6 +548,63 @@ async function login() {
     bindMembership();
   } catch (e) {
     showLoginError(e?.message || 'Login failed. Check credentials and try again.');
+  }
+}
+
+async function register() {
+  initFirebase();
+
+  const code = document.getElementById('login-class-code').value.trim();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('login-password').value;
+  const name = document.getElementById('signup-name')?.value.trim();
+  const role = document.getElementById('signup-role')?.value || 'student';
+  const confirm = document.getElementById('signup-confirm-password')?.value || '';
+
+  showLoginError('');
+
+  if (!code || !email || !pass || !name) {
+    showLoginError('Please fill class code, email, password, and full name.');
+    return;
+  }
+  if (pass.length < 6) {
+    showLoginError('Password must be at least 6 characters.');
+    return;
+  }
+  if (pass !== confirm) {
+    showLoginError('Password and confirmation do not match.');
+    return;
+  }
+
+  classId = code;
+
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    currentUserUid = cred.user.uid;
+    currentUser = name;
+
+    if (cred.user && name) {
+      await cred.user.updateProfile({ displayName: name });
+    }
+
+    await db
+      .collection('classes')
+      .doc(classId)
+      .collection('members')
+      .doc(currentUserUid)
+      .set({
+        role,
+        displayName: name,
+        email,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    bindMembership();
+  } catch (e) {
+    showLoginError(e?.message || 'Account creation failed. Please try again.');
   }
 }
 
@@ -849,21 +936,13 @@ function renderSubmitPane() {
     </select></div>
     <div class="form-row"><label class="form-label">Your name</label><input class="form-ctrl" id="sub-name" value="${currentUser}" readonly/></div>
     <div class="form-row"><label class="form-label">Student ID</label><input class="form-ctrl" id="sub-id" placeholder="e.g. CS2024-0042"/></div>
-    <div class="form-row"><label class="form-label">Upload file</label>
-      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-        <div style="font-size:24px;margin-bottom:8px;opacity:0.4">📎</div>
-        <span id="upload-label">Click to browse or drag & drop</span><br>
-        <span style="font-size:11px">PDF, DOCX, ZIP — up to 20 MB</span>
-        <input type="file" id="file-input" style="display:none" onchange="fileSelected(this)"/>
-      </div>
+    <div class="form-row"><label class="form-label">Google Drive / Docs link</label>
+      <input class="form-ctrl" id="sub-drive-link" type="url" placeholder="https://drive.google.com/…"/>
+      <div style="font-size:11px;color:var(--text2);margin-top:5px">📎 Share your file on Google Drive (set sharing to <b>"Anyone with the link"</b>), then paste the link here.</div>
     </div>
     <div class="form-row"><label class="form-label">Notes to lecturer (optional)</label><textarea class="form-ctrl" id="sub-notes" rows="3" placeholder="Any notes…"></textarea></div>
     <div class="form-actions"><button class="btn" onclick="showPane('assignments',null)">Cancel</button><button class="btn blue" onclick="submitAssignment()">Submit assignment</button></div>
   </div>`;
-}
-
-function fileSelected(input) {
-  if (input.files[0]) document.getElementById('upload-label').textContent = '✓ ' + input.files[0].name;
 }
 
 function renderLecturerSubmissions() {
@@ -879,7 +958,10 @@ function renderLecturerSubmissions() {
       html += '<div class="empty" style="padding:20px"><div class="empty-text">No submissions yet</div></div>';
     } else {
       mySubs.forEach(s => {
-        html += `<div class="sub-row"><div class="sub-name">${s.studentName}<span style="font-size:11px;color:var(--text3);margin-left:8px">${s.studentId}</span></div><div class="sub-meta">${formatDate(s.submittedAt)} · ${s.fileName||'No file'}${s.filePath?`<div style="margin-top:6px"><button class="btn sm" onclick="openSubmissionFile('${encodeURIComponent(s.filePath)}')">Open file</button></div>`:''}</div><span class="sub-status submitted">Submitted</span></div>`;
+        const linkHtml = s.driveLink
+          ? `<a href="${s.driveLink}" target="_blank" rel="noopener" style="font-size:12px;color:var(--blue)">📎 Open Drive file</a>`
+          : '<span style="font-size:12px;color:var(--text3)">No link provided</span>';
+        html += `<div class="sub-row"><div class="sub-name">${s.studentName}<span style="font-size:11px;color:var(--text3);margin-left:8px">${s.studentId}</span></div><div class="sub-meta">${formatDate(s.submittedAt)}<br>${linkHtml}${s.notes?`<div style="margin-top:3px;font-size:11px;color:var(--text2)">${s.notes}</div>`:''}</div><span class="sub-status submitted">Submitted</span></div>`;
       });
     }
     html += '</div></div>';
@@ -887,31 +969,27 @@ function renderLecturerSubmissions() {
   return html || '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No assignments posted</div></div>';
 }
 
-async function openSubmissionFile(encodedPath) {
-  if (!encodedPath) return;
-  try {
-    const path = decodeURIComponent(encodedPath);
-    const url = await storage.ref(path).getDownloadURL();
-    window.open(url, '_blank');
-  } catch (e) {
-    alert(e?.message || 'Failed to open file.');
-  }
-}
+// openSubmissionFile removed — Drive links open directly as anchor tags in submissions view
 
 function goSubmit(id) {
   showPane('submit', null);
   setTimeout(()=>{ const s=document.getElementById('sub-assign'); if(s){for(let o of s.options){if(o.value===id){o.selected=true;break;}}} }, 100);
 }
 
-function submitAssignment() {
+async function submitAssignment() {
   if (currentRole!=='student') return;
   const aid = document.getElementById('sub-assign')?.value;
   const sid = document.getElementById('sub-id')?.value.trim();
-  const file = document.getElementById('file-input')?.files[0];
-  if (!aid) return;
+  const driveLink = document.getElementById('sub-drive-link')?.value.trim();
   const notes = document.getElementById('sub-notes')?.value || '';
-  if (!file) {
-    alert('Please upload a file before submitting.');
+  if (!aid) return;
+
+  if (!driveLink) {
+    alert('Please paste your Google Drive link before submitting.');
+    return;
+  }
+  if (!driveLink.startsWith('http')) {
+    alert('Please enter a valid link (should start with https://).');
     return;
   }
 
@@ -921,40 +999,27 @@ function submitAssignment() {
     return;
   }
 
-  const safeFileName = (file.name || 'file').replace(/\//g, '_');
-  const submissionId = Date.now();
-  const storagePath = `submission_files/${classId}/${aid}/${currentUserUid}/${submissionId}/${safeFileName}`;
+  try {
+    await db.collection('classes').doc(classId).collection('submissions').add({
+      assignmentId: aid,
+      studentUid: currentUserUid,
+      studentName: currentUser,
+      studentId: sid || 'N/A',
+      driveLink,
+      notes,
+      submittedAt: new Date().toISOString(),
+    });
 
-  (async () => {
-    try {
-      await storage.ref(storagePath).put(file);
+    const toast = document.getElementById('submit-toast');
+    if (toast) { toast.style.display='block'; setTimeout(()=>toast.style.display='none',4000); }
 
-      await db.collection('classes').doc(classId).collection('submissions').add({
-        assignmentId: aid,
-        studentUid: currentUserUid,
-        studentName: currentUser,
-        studentId: sid || 'N/A',
-        fileName: file.name,
-        filePath: storagePath,
-        notes,
-        submittedAt: new Date().toISOString(),
-      });
-
-      const toast = document.getElementById('submit-toast');
-      if (toast) { toast.style.display='block'; setTimeout(()=>toast.style.display='none',4000); }
-
-      // Clear file input for the next submission.
-      const fileInput = document.getElementById('file-input');
-      if (fileInput) fileInput.value = '';
-      const uploadLabel = document.getElementById('upload-label');
-      if (uploadLabel) uploadLabel.textContent = 'Click to browse or drag & drop';
-
-      const notesEl = document.getElementById('sub-notes');
-      if (notesEl) notesEl.value = '';
-    } catch (e) {
-      alert(e?.message || 'Failed to submit. Please try again.');
-    }
-  })();
+    const driveLinkEl = document.getElementById('sub-drive-link');
+    if (driveLinkEl) driveLinkEl.value = '';
+    const notesEl = document.getElementById('sub-notes');
+    if (notesEl) notesEl.value = '';
+  } catch (e) {
+    alert(e?.message || 'Failed to submit. Please try again.');
+  }
 }
 
 // ── Mini calendar ──

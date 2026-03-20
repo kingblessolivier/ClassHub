@@ -6,6 +6,9 @@
     "node": "18"
   },
   "main": "index.js",
+  "scripts": {
+    "provision:users": "node scripts/provision-users.js ../users.template.csv"
+  },
   "dependencies": {
     "firebase-admin": "^13.0.1",
     "firebase-functions": "^4.4.1"

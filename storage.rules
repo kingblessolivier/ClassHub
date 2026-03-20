@@ -8,11 +8,11 @@ service firebase.storage {
 
     function isMember(classId) {
       return isAuthed() &&
-        exists(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid));
+        firestore.exists(/databases/(default)/documents/classes/$(classId)/members/$(request.auth.uid));
     }
 
     function roleOf(classId) {
-      return get(/databases/$(database)/documents/classes/$(classId)/members/$(request.auth.uid)).data.role;
+      return firestore.get(/databases/(default)/documents/classes/$(classId)/members/$(request.auth.uid)).data.role;
     }
 
     function isRepOrLecturer(classId) {
