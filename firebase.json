@@ -1,12 +1,6 @@
 {
-  "functions": {
-    "source": "functions"
-  },
   "firestore": {
     "rules": "firestore.rules"
-  },
-  "storage": {
-    "rules": "storage.rules"
   },
   "hosting": {
     "public": ".",
@@ -14,8 +8,10 @@
       "firebase.json",
       "**/node_modules/**",
       "functions/**",
-      "**/.firebase/**"
+      "**/.firebase/**",
+      "storage.rules",
+      "users.template.csv",
+      "PROVISION_USERS.md"
     ]
   }
 }
-
