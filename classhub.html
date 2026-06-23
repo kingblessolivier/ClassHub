@@ -280,6 +280,10 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .tab-bar{display:flex;gap:4px;background:var(--surface2);border-radius:8px;padding:4px;margin-bottom:16px;width:fit-content}
 .tab{padding:6px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);border:none;background:transparent;transition:all 0.15s}
 .tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.assign-controls{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.assign-search{flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:13px;outline:none;transition:border 0.15s}
+.assign-search:focus{border-color:var(--blue)}
+.assign-sort{padding:9px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:13px;outline:none;cursor:pointer}
 
 /* ── Empty state ── */
 .empty{text-align:center;padding:40px 20px;color:var(--text2)}
@@ -396,6 +400,16 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
         <button class="tab active" onclick="filterAssign('all',this)">All</button>
         <button class="tab" onclick="filterAssign('active',this)">Active</button>
         <button class="tab" onclick="filterAssign('submitted',this)">Submitted</button>
+      </div>
+      <div class="assign-controls">
+        <input type="text" id="assign-search" class="assign-search" placeholder="Search by title, subject, or description…" oninput="onAssignSearch(this.value)" />
+        <select id="assign-sort" class="assign-sort" onchange="onAssignSort(this.value)" aria-label="Sort assignments">
+          <option value="due-asc">Due date · soonest first</option>
+          <option value="due-desc">Due date · latest first</option>
+          <option value="subject">Subject · A–Z</option>
+          <option value="title">Title · A–Z</option>
+          <option value="marks-desc">Marks · high to low</option>
+        </select>
       </div>
       <div class="card" id="full-assign-list"></div>
     </div>
@@ -575,6 +589,8 @@ let classId = null;
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let currentAssignFilter = 'all';
+let currentAssignSearch = '';
+let currentAssignSort = 'due-asc';
 
 let assignments = [];
 let announcements = [];
@@ -943,7 +959,18 @@ function renderFullAssignments() {
   let assigns = getAssignments();
   if (currentRole==='student' && currentAssignFilter==='submitted') assigns = assigns.filter(a=>subs.some(s=>s.assignmentId===a.id&&s.studentUid===currentUserUid));
   else if (currentRole==='student' && currentAssignFilter==='active') assigns = assigns.filter(a=>!subs.some(s=>s.assignmentId===a.id&&s.studentUid===currentUserUid));
-  if (!assigns.length) { el.innerHTML='<div class="empty" style="padding:40px"><div class="empty-icon">📋</div><div class="empty-text">No assignments in this filter</div></div>'; return; }
+  if (currentAssignSearch) {
+    assigns = assigns.filter(a =>
+      (a.title||'').toLowerCase().includes(currentAssignSearch) ||
+      (a.subject||'').toLowerCase().includes(currentAssignSearch) ||
+      (a.desc||'').toLowerCase().includes(currentAssignSearch));
+  }
+  assigns = sortAssignments(assigns, currentAssignSort);
+  if (!assigns.length) {
+    const msg = currentAssignSearch ? 'No assignments match your search' : 'No assignments in this filter';
+    el.innerHTML=`<div class="empty" style="padding:40px"><div class="empty-icon">📋</div><div class="empty-text">${msg}</div></div>`;
+    return;
+  }
   el.innerHTML = '<div class="card-body">';
   assigns.forEach(a => {
     const u = urgency(a.due);
@@ -976,6 +1003,28 @@ function filterAssign(f,el) {
   currentAssignFilter = f;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
+  renderFullAssignments();
+}
+
+function sortAssignments(list, mode) {
+  const arr = list.slice();
+  switch (mode) {
+    case 'due-desc':   return arr.sort((a,b)=> new Date(b.due) - new Date(a.due));
+    case 'subject':    return arr.sort((a,b)=> (a.subject||'').localeCompare(b.subject||''));
+    case 'title':      return arr.sort((a,b)=> (a.title||'').localeCompare(b.title||''));
+    case 'marks-desc': return arr.sort((a,b)=> (Number(b.marks)||0) - (Number(a.marks)||0));
+    case 'due-asc':
+    default:           return arr.sort((a,b)=> new Date(a.due) - new Date(b.due));
+  }
+}
+
+function onAssignSearch(v) {
+  currentAssignSearch = (v || '').toLowerCase().trim();
+  renderFullAssignments();
+}
+
+function onAssignSort(v) {
+  currentAssignSort = v;
   renderFullAssignments();
 }
 
