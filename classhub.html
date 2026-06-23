@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>ClassHub — Assignment Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script>
+  // Set theme before paint to avoid a flash of the wrong theme.
+  (function () {
+    try {
+      var saved = localStorage.getItem('classhub-theme');
+      var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  })();
+</script>
 <style>
 :root {
   --bg: #f5f4f0;
@@ -35,6 +47,41 @@
   --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
 }
+:root[data-theme="dark"] {
+  --bg: #1b1916;
+  --surface: #252320;
+  --surface2: #2f2c28;
+  --border: rgba(255,255,255,0.10);
+  --border2: rgba(255,255,255,0.18);
+  --text: #f3f1ec;
+  --text2: #b0aca3;
+  --text3: #827e76;
+  --blue: #3b82f6;
+  --blue-bg: rgba(59,130,246,0.16);
+  --blue-text: #93c5fd;
+  --red: #f05252;
+  --red-bg: rgba(240,82,82,0.16);
+  --red-text: #fca5a5;
+  --amber: #f59e0b;
+  --amber-bg: rgba(245,158,11,0.16);
+  --amber-text: #fcd34d;
+  --green: #0ea371;
+  --green-bg: rgba(14,163,113,0.16);
+  --green-text: #6ee7b7;
+  --purple: #9061f9;
+  --purple-bg: rgba(144,97,249,0.16);
+  --purple-text: #c4b5fd;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 14px rgba(0,0,0,0.5);
+}
+/* Solid-accent elements use --text as a background in light mode; keep them
+   readable in dark mode by switching the background to the blue accent. */
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] .cal-day.today,
+:root[data-theme="dark"] .ai-avatar.bot,
+:root[data-theme="dark"] .ai-msg.user .ai-bubble,
+:root[data-theme="dark"] .ai-send{background:var(--blue)}
+:root[data-theme="dark"] .form-ctrl[type=date]{color-scheme:dark}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
 button{font-family:'DM Sans',sans-serif;cursor:pointer}
@@ -72,6 +119,8 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .user-name{font-size:13px;font-weight:500}
 .logout-btn{padding:6px 12px;background:none;border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text2);transition:all 0.15s}
 .logout-btn:hover{background:var(--bg);color:var(--text)}
+.theme-toggle{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid var(--border2);border-radius:8px;font-size:15px;line-height:1;color:var(--text2);cursor:pointer;transition:all 0.15s}
+.theme-toggle:hover{background:var(--bg);color:var(--text)}
 
 .main-content{flex:1;overflow-y:auto;padding:24px}
 .pane{display:none}
@@ -286,6 +335,7 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
       <button class="tnav" onclick="showPane('ai',this)">AI Assistant</button>
     </div>
     <div class="topnav-right">
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
       <span class="role-chip" id="role-chip">Rep</span>
       <span class="user-name" id="user-name-display">—</span>
       <button class="logout-btn" onclick="logout()">Log out</button>
@@ -464,6 +514,22 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 </script>
 
 <script>
+// ── Theme (dark mode) ──
+// The initial theme is applied before paint by an inline script in <head>.
+function syncThemeToggle() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('classhub-theme', next); } catch (e) {}
+  syncThemeToggle();
+}
+syncThemeToggle();
+
 // ── State ──
 let currentUser = null; // display name
 let currentUserUid = null;
