@@ -285,9 +285,22 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 .empty{text-align:center;padding:40px 20px;color:var(--text2)}
 .empty-icon{font-size:32px;margin-bottom:10px;opacity:0.4}
 .empty-text{font-size:13px}
+
+/* ── Toasts ── */
+.toast-wrap{position:fixed;top:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:340px;pointer-events:none}
+.toast{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--text3);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:12px 14px;font-size:13px;color:var(--text);display:flex;align-items:flex-start;gap:10px;pointer-events:auto;animation:toast-in 0.2s ease}
+.toast.error{border-left-color:var(--red)}
+.toast.success{border-left-color:var(--green)}
+.toast.info{border-left-color:var(--blue)}
+.toast-ic{font-size:15px;line-height:1.4}
+.toast-msg{flex:1;line-height:1.45;word-break:break-word}
+@keyframes toast-in{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
+
+<!-- Toast notifications -->
+<div class="toast-wrap" id="toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
@@ -517,6 +530,26 @@ input,select,textarea{font-family:'DM Sans',sans-serif}
 </script>
 
 <script>
+// ── Toast notifications ──
+// Non-blocking replacement for alert(); auto-dismisses.
+function showToast(message, type = 'info', timeout = 4000) {
+  const wrap = document.getElementById('toast-wrap');
+  if (!wrap) { console.warn('[toast]', message); return; }
+  const icons = { error: '⚠️', success: '✅', info: 'ℹ️' };
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || 'info');
+  el.innerHTML = '<span class="toast-ic"></span><span class="toast-msg"></span>';
+  el.querySelector('.toast-ic').textContent = icons[type] || icons.info;
+  el.querySelector('.toast-msg').textContent = message; // textContent => no HTML injection
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity 0.2s, transform 0.2s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(12px)';
+    setTimeout(() => el.remove(), 200);
+  }, timeout);
+}
+
 // ── Theme (dark mode) ──
 // The initial theme is applied before paint by an inline script in <head>.
 function syncThemeToggle() {
@@ -953,7 +986,7 @@ function deleteAssignment(id) {
     .collection('assignments')
     .doc(id)
     .delete()
-    .catch(e => alert(e?.message || 'Failed to delete assignment.'));
+    .catch(e => showToast(e?.message || 'Failed to delete assignment.', 'error'));
 }
 
 // ── Full announcements ──
@@ -985,7 +1018,7 @@ function deleteAnn(id) {
     .collection('announcements')
     .doc(id)
     .delete()
-    .catch(e => alert(e?.message || 'Failed to delete announcement.'));
+    .catch(e => showToast(e?.message || 'Failed to delete announcement.', 'error'));
 }
 
 // ── Submit pane ──
@@ -1054,17 +1087,17 @@ async function submitAssignment() {
   if (!aid) return;
 
   if (!driveLink) {
-    alert('Please paste your Google Drive link before submitting.');
+    showToast('Please paste your Google Drive link before submitting.', 'error');
     return;
   }
   if (!driveLink.startsWith('http')) {
-    alert('Please enter a valid link (should start with https://).');
+    showToast('Please enter a valid link (should start with https://).', 'error');
     return;
   }
 
   const subs = getSubmissions();
   if (subs.some(s=>s.assignmentId===aid&&s.studentUid===currentUserUid)) {
-    alert('You have already submitted this assignment.');
+    showToast('You have already submitted this assignment.', 'error');
     return;
   }
 
@@ -1087,7 +1120,7 @@ async function submitAssignment() {
     const notesEl = document.getElementById('sub-notes');
     if (notesEl) notesEl.value = '';
   } catch (e) {
-    alert(e?.message || 'Failed to submit. Please try again.');
+    showToast(e?.message || 'Failed to submit. Please try again.', 'error');
   }
 }
 
@@ -1105,7 +1138,7 @@ function renderFullCal() {
 function exportIcs() {
   const assigns = getAssignments();
   if (!assigns.length) {
-    alert('No assignments to export.');
+    showToast('No assignments to export.', 'info');
     return;
   }
 
@@ -1236,7 +1269,7 @@ function postAssignment() {
   const desc = document.getElementById('ma-desc').value.trim();
   const due = document.getElementById('ma-due').value;
   const marks = document.getElementById('ma-marks').value;
-  if (!title||!due) { alert('Title and due date are required.'); return; }
+  if (!title||!due) { showToast('Title and due date are required.', 'error'); return; }
 
   (async () => {
     try {
@@ -1256,7 +1289,7 @@ function postAssignment() {
       ['ma-title','ma-subject','ma-desc','ma-marks'].forEach(id=>document.getElementById(id).value='');
       document.getElementById('ma-due').value='';
     } catch (e) {
-      alert(e?.message || 'Failed to post assignment.');
+      showToast(e?.message || 'Failed to post assignment.', 'error');
     }
   })();
 }
@@ -1266,7 +1299,7 @@ function postAnnouncement() {
   const title = document.getElementById('mnn-title').value.trim();
   const body = document.getElementById('mnn-body').value.trim();
   const type = document.getElementById('mnn-type').value;
-  if (!title||!body) { alert('Title and message are required.'); return; }
+  if (!title||!body) { showToast('Title and message are required.', 'error'); return; }
 
   (async () => {
     try {
@@ -1284,7 +1317,7 @@ function postAnnouncement() {
       document.getElementById('mnn-title').value='';
       document.getElementById('mnn-body').value='';
     } catch (e) {
-      alert(e?.message || 'Failed to post announcement.');
+      showToast(e?.message || 'Failed to post announcement.', 'error');
     }
   })();
 }
