@@ -1,0 +1,49 @@
+# ---- Environment & secrets ----
+.env
+.env.*
+*.pem
+*.key
+secrets/
+
+# ---- Python (Django / FastAPI backend) ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+db.sqlite3
+
+# ---- Node / React (web frontend) ----
+node_modules/
+dist/
+build/
+.cache/
+npm-debug.log*
+yarn-error.log*
+
+# ---- Flutter / Dart (mobile apps) ----
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.iml
+
+# ---- Infrastructure ----
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# ---- IDE / OS ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Logs & coverage ----
+*.log
+coverage/
+htmlcov/
